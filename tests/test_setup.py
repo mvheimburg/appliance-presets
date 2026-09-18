@@ -85,3 +85,14 @@ async def test_websocket_editor_round_trip(
     assert (await client.receive_json())["success"]
     await client.send_json_auto_id({"type": f"{DOMAIN}/presets"})
     assert (await client.receive_json())["result"] == []
+
+
+async def test_status_sensor_id_uses_an_english_key_in_any_language(
+    hass: HomeAssistant, freezer, oven, entry: MockConfigEntry
+) -> None:
+    hass.config.language = "nb"
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    assert hass.states.get("sensor.dampovn_preset") is not None
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()

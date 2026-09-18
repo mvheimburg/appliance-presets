@@ -64,6 +64,11 @@ class PresetStatusSensor(SensorEntity):
             runner.hass, runner.device_id
         )
 
+    @property
+    def suggested_object_id(self) -> str:
+        # "<appliance>_preset" in any UI language: "Oven" -> sensor.oven_preset.
+        return "preset"
+
     async def async_added_to_hass(self) -> None:
         self.runner.entity_id = self.entity_id
         self.async_on_remove(self.runner.async_add_listener(self.async_write_ha_state))
