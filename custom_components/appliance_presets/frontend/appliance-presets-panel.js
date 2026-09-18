@@ -74,6 +74,14 @@ const STRINGS = {
 
 const KINDS = ["preheat", "timed", "hold"];
 
+// Translation language only; dates keep the user's formatting locale.
+// nb, nb-NO and legacy no are Bokmål; nn falls back to Bokmål too.
+export function panelLanguage(hass) {
+  const raw = String(hass?.language || hass?.locale?.language || "en");
+  const base = raw.toLowerCase().replace(/_/g, "-").split("-")[0];
+  return ["nb", "no", "nn"].includes(base) ? "nb" : "en";
+}
+
 const esc = (value) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const shortProgram = (program) => String(program).split(".").pop();
@@ -100,10 +108,7 @@ class AppliancePresetsPanel extends HTMLElement {
   set panel(_value) {}
 
   t(key, vars = {}) {
-    const lang = (this._hass?.locale?.language || this._hass?.language || "en").startsWith("nb")
-      ? "nb"
-      : "en";
-    let text = STRINGS[lang][key] ?? STRINGS.en[key] ?? key;
+    let text = STRINGS[panelLanguage(this._hass)][key] ?? STRINGS.en[key] ?? key;
     for (const [k, v] of Object.entries(vars)) text = text.replace(`{${k}}`, v);
     return text;
   }
