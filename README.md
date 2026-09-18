@@ -1,3 +1,5 @@
+<img src="custom_components/appliance_presets/brand/icon.png" alt="" width="96" align="right">
+
 # Appliance Presets
 
 A Home Assistant integration for **staged presets**: named, multi-step
