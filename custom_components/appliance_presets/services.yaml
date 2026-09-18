@@ -1,0 +1,60 @@
+run:
+  target:
+    entity:
+      integration: appliance_presets
+      domain: sensor
+  fields:
+    preset:
+      required: true
+      example: Pizza
+      selector:
+        text:
+    start_at:
+      selector:
+        datetime:
+    ready_at:
+      selector:
+        datetime:
+    confirm:
+      required: true
+      default: false
+      selector:
+        boolean:
+
+abort:
+  target:
+    entity:
+      integration: appliance_presets
+      domain: sensor
+
+save:
+  fields:
+    id:
+      example: pizza
+      selector:
+        text:
+    name:
+      required: true
+      example: Pizza
+      selector:
+        text:
+    device_id:
+      required: true
+      selector:
+        device:
+          integration: homeconnect_ws
+    steps:
+      required: true
+      example: >-
+        [{"kind": "preheat", "program": "Cooking.Oven.Program.HeatingMode.HotAir", "setpoint": 250},
+         {"kind": "timed", "program": "Cooking.Oven.Program.HeatingMode.HotAir", "setpoint": 250, "duration_minutes": 12}]
+      selector:
+        object:
+
+delete:
+  fields:
+    preset_id:
+      required: true
+      example: pizza
+      selector:
+        text:

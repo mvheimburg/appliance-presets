@@ -1,0 +1,86 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "Dette apparatet har allerede forhåndsvalg."
+    },
+    "error": {
+      "not_programmable": "Enheten mangler programvalg, start og avbryt, så forhåndsvalg kan ikke styre den."
+    },
+    "step": {
+      "user": {
+        "description": "Velg Home Connect-apparatet som forhåndsvalgene skal styre.",
+        "data": {
+          "device_id": "Apparat"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Planlegging og sikkerhet. Start krever alltid bekreftelse; avbryt gjør aldri det.",
+        "data": {
+          "preheat_minutes": "Anslått forvarming",
+          "max_total_minutes": "Lengste totale kjøretid",
+          "abort_on_door_open": "Avbryt hvis døren blir stående åpen",
+          "door_min_setpoint": "Bare når innstilt temperatur er minst",
+          "door_grace_seconds": "Døren kan stå åpen i",
+          "require_home": "Start bare når noen er hjemme",
+          "person_entities": "Personer"
+        },
+        "data_description": {
+          "preheat_minutes": "Brukes til å regne baklengs fra når maten skal være ferdig. Selve kjøringen venter på faktisk temperatur.",
+          "max_total_minutes": "Forhåndsvalget avbrytes og apparatet slås av etter dette, uansett hvilket steg det er på.",
+          "door_grace_seconds": "Lenge nok til å sette inn maten etter forvarming."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "preset": {
+        "name": "Forhåndsvalg",
+        "state": {
+          "idle": "Klar",
+          "scheduled": "Planlagt",
+          "running": "Kjører",
+          "finished": "Ferdig",
+          "failed": "Feilet"
+        }
+      }
+    }
+  },
+  "services": {
+    "run": {
+      "name": "Kjør forhåndsvalg",
+      "description": "Start et forhåndsvalg nå, på et tidspunkt, eller slik at det er ferdig til et tidspunkt.",
+      "fields": {
+        "preset": { "name": "Forhåndsvalg", "description": "Navn eller id." },
+        "start_at": { "name": "Start", "description": "Når det skal starte. Tomt betyr nå." },
+        "ready_at": { "name": "Ferdig", "description": "Når maten skal være ferdig; starttidspunktet regnes ut baklengs." },
+        "confirm": { "name": "Bekreft", "description": "Må være sann: dette starter et fysisk apparat." }
+      }
+    },
+    "abort": {
+      "name": "Avbryt forhåndsvalg",
+      "description": "Stopp det planlagte eller kjørende forhåndsvalget og programmet på apparatet."
+    },
+    "save": {
+      "name": "Lagre forhåndsvalg",
+      "description": "Opprett eller erstatt et forhåndsvalg.",
+      "fields": {
+        "id": { "name": "Id", "description": "Standard er navnet som slug." },
+        "name": { "name": "Navn", "description": "Visningsnavn." },
+        "device_id": { "name": "Apparat", "description": "Apparatet forhåndsvalget kjører på." },
+        "steps": { "name": "Steg", "description": "Ordnet liste med steg: kind (timed, preheat, hold), program, setpoint, duration_minutes, timeout_minutes." }
+      }
+    },
+    "delete": {
+      "name": "Slett forhåndsvalg",
+      "description": "Slett et forhåndsvalg.",
+      "fields": {
+        "preset_id": { "name": "Id", "description": "Forhåndsvalget som skal slettes." }
+      }
+    }
+  }
+}

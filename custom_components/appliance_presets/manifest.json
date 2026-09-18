@@ -1,0 +1,16 @@
+{
+  "domain": "appliance_presets",
+  "name": "Appliance Presets",
+  "after_dependencies": ["frontend", "http", "panel_custom"],
+  "codeowners": [
+    "@mvheimburg"
+  ],
+  "config_flow": true,
+  "dependencies": ["websocket_api"],
+  "documentation": "https://github.com/mvheimburg/appliance-presets",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/mvheimburg/appliance-presets/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

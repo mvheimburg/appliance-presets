@@ -1,0 +1,86 @@
+{
+  "config": {
+    "abort": {
+      "already_configured": "This appliance already has presets."
+    },
+    "error": {
+      "not_programmable": "This device has no programme, start and abort controls, so presets cannot drive it."
+    },
+    "step": {
+      "user": {
+        "description": "Pick the Home Connect appliance that presets should drive.",
+        "data": {
+          "device_id": "Appliance"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Planning and safety. Starting always needs confirmation; aborting never does.",
+        "data": {
+          "preheat_minutes": "Preheat estimate",
+          "max_total_minutes": "Maximum total run time",
+          "abort_on_door_open": "Abort if the door is left open",
+          "door_min_setpoint": "Only when the setpoint is at least",
+          "door_grace_seconds": "Door may be open for",
+          "require_home": "Only start when someone is home",
+          "person_entities": "People"
+        },
+        "data_description": {
+          "preheat_minutes": "Used to work backwards from a ready time. The actual run waits for the real temperature.",
+          "max_total_minutes": "The preset aborts and powers the appliance down after this, whatever step it is on.",
+          "door_grace_seconds": "Long enough to put food in after preheating."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "preset": {
+        "name": "Preset",
+        "state": {
+          "idle": "Idle",
+          "scheduled": "Scheduled",
+          "running": "Running",
+          "finished": "Finished",
+          "failed": "Failed"
+        }
+      }
+    }
+  },
+  "services": {
+    "run": {
+      "name": "Run preset",
+      "description": "Start a preset now, at a time, or so that it is ready at a time.",
+      "fields": {
+        "preset": { "name": "Preset", "description": "Preset name or id." },
+        "start_at": { "name": "Start at", "description": "When to start. Leave empty to start now." },
+        "ready_at": { "name": "Ready at", "description": "When the food should be ready; the start time is worked out backwards." },
+        "confirm": { "name": "Confirm", "description": "Must be true: this starts a physical appliance." }
+      }
+    },
+    "abort": {
+      "name": "Abort preset",
+      "description": "Stop the scheduled or running preset and the appliance programme."
+    },
+    "save": {
+      "name": "Save preset",
+      "description": "Create or replace a preset.",
+      "fields": {
+        "id": { "name": "Id", "description": "Defaults to the slugified name." },
+        "name": { "name": "Name", "description": "Display name." },
+        "device_id": { "name": "Appliance", "description": "The appliance the preset runs on." },
+        "steps": { "name": "Steps", "description": "Ordered list of steps: kind (timed, preheat, hold), program, setpoint, duration_minutes, timeout_minutes." }
+      }
+    },
+    "delete": {
+      "name": "Delete preset",
+      "description": "Delete a preset.",
+      "fields": {
+        "preset_id": { "name": "Preset id", "description": "The preset to delete." }
+      }
+    }
+  }
+}
