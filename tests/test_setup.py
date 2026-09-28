@@ -34,7 +34,9 @@ async def test_config_flow_creates_entry_per_appliance(
     assert again["type"] is FlowResultType.ABORT
 
 
-async def test_config_flow_rejects_non_programmable_device(hass: HomeAssistant) -> None:
+async def test_config_flow_accepts_a_fridge_for_notifications_only(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
     hc = MockConfigEntry(domain="homeconnect_ws")
     hc.add_to_hass(hass)
     fridge = dr.async_get(hass).async_get_or_create(
@@ -46,7 +48,51 @@ async def test_config_flow_rejects_non_programmable_device(hass: HomeAssistant) 
     result = await hass.config_entries.flow.async_configure(
         result["flow_id"], {"device_id": fridge.id}
     )
-    assert result["errors"] == {"base": "not_programmable"}
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    await hass.async_block_till_done()
+    # No preset sensor and no panel entry: it only notifies.
+    assert hass.states.async_entity_ids("sensor") == []
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id({"type": f"{DOMAIN}/appliances"})
+    assert (await client.receive_json())["result"] == []
+
+    # Its Configure form only has the notification settings.
+    entry = result["result"]
+    form = await hass.config_entries.options.async_init(entry.entry_id)
+    assert form["step_id"] == "notify"
+    assert {str(k) for k in form["data_schema"].schema} == {"notify_persons", "notify_on"}
+    done = await hass.config_entries.options.async_configure(
+        form["flow_id"], {"notify_persons": ["person.anna"], "notify_on": ["problem"]}
+    )
+    assert done["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options == {"notify_persons": ["person.anna"], "notify_on": ["problem"]}
+
+
+async def test_options_keep_hidden_settings_and_drop_cleared_people(
+    hass: HomeAssistant, freezer, oven, entry: MockConfigEntry
+) -> None:
+    hass.config_entries.async_update_entry(
+        entry, options={"notify_persons": ["person.anna"], "preheat_minutes": 20}
+    )
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    form = await hass.config_entries.options.async_init(entry.entry_id)
+    assert form["step_id"] == "init"
+    # The oven's form shows everything; the people field comes back cleared.
+    user_input = {
+        "preheat_minutes": 20,
+        "max_total_minutes": 720,
+        "abort_on_door_open": True,
+        "door_min_setpoint": 150,
+        "door_grace_seconds": 120,
+        "require_home": False,
+        "notify_on": ["finished"],
+    }
+    await hass.config_entries.options.async_configure(form["flow_id"], user_input)
+    assert "notify_persons" not in entry.options
+    assert entry.options["notify_on"] == ["finished"]
+    await hass.config_entries.async_unload(entry.entry_id)
+    await hass.async_block_till_done()
 
 
 async def test_websocket_editor_round_trip(

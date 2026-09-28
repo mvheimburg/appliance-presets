@@ -13,9 +13,14 @@ Pizza                               Langtidsstek
   3. Grill   220 °C  3 min            3. HotAir   50 °C  hold until aborted
 ```
 
+It also offers **Notify when home** for any Home Connect appliance. The
+appliance still beeps, and the people you choose who are home also get a
+notification on their phone when the timer runs out, a programme finishes, or
+an alarm goes off.
+
 Companion to [lovelace-appliance-panel](https://github.com/mvheimburg/lovelace-appliance-panel),
 which shows and controls the appliances themselves. This integration only adds
-presets.
+presets and notifications.
 
 > **Status: 0.1, not yet run against a real oven.** The engine is tested
 > against a faked Home Connect Local oven. Before trusting it with dinner, run
@@ -28,8 +33,10 @@ presets.
 HACS → Integrations → custom repository `mvheimburg/appliance-presets`, or copy
 `custom_components/appliance_presets` into your config. Then add one entry per
 appliance under **Settings → Devices & services → Add integration → Appliance
-Presets**. Only devices from Home Connect Local
-(`homeconnect_ws`) that expose programme, start and abort controls can be added.
+Presets**. Any Home Connect Local (`homeconnect_ws`) device can be added.
+Presets are only offered for appliances with programme, start and abort
+controls, such as an oven. Other appliances, such as a fridge, only get
+notifications: no preset sensor and no entry in the Presets panel.
 
 A **Presets** item appears in the sidebar for building and running presets.
 
@@ -42,6 +49,7 @@ A **Presets** item appears in the sidebar for building and running presets.
 | `appliance_presets.run` | `preset`, `start_at` or `ready_at`, `confirm` (must be true). Targets the status sensor. |
 | `appliance_presets.abort` | Stops the preset and the appliance programme. Never needs confirmation. |
 | `appliance_presets.save` / `delete` | Manage presets from scripts. Presets are stored in `.storage`, not YAML. |
+| Notify when home | Phone notifications for the appliance, set under **Configure**. See below. |
 | `appliance_presets_event` | `type`: `scheduled`, `started`, `step_started`, `step_finished`, `finished`, `aborted`, `failed` (with `reason`). |
 
 Sensor attributes: `preset`, `step_index`, `step_count`, `step_name`,
@@ -70,6 +78,39 @@ data:
   ready_at: "2026-09-18 18:00"
   confirm: true
 ```
+
+## Notify when home
+
+**Settings → Devices & services → Appliance Presets → the appliance →
+Configure**:
+
+- **Notify when home**: the people to notify. Each person gets the
+  notification only while their `person` entity is `home`. If none of them are
+  home, nothing is sent.
+- **Notify about**: any of *Timer done* (the appliance's own kitchen timer),
+  *Programme or preset finished*, and *Alarms and faults*. The default is all
+  three.
+
+Notifications go to each person's Home Assistant Companion app. The app is
+found through the person's `mobile_app` device trackers, and the notification
+is sent with `notify.mobile_app_<phone>`. A person without the app gets
+nothing. Notifications are time-sensitive on iOS and high priority on Android.
+A newer notification of the same kind replaces the older one.
+
+What counts:
+
+| Kind | Home Connect Local event sensor |
+|---|---|
+| Timer done | `alarm_clock_elapsed` (and oven cavity variants) |
+| Finished | `program_finished`, or a preset finishing |
+| Alarms and faults | door and temperature alarms, errors, empty or low tanks, aqua stop, filters, other `problem` sensors, or a preset failing (with its reason) |
+
+Only an off → on change is reported, so a restart or a reconnect does not
+resend old alarms. *Programme aborted* is never reported, because a preset
+aborts the programme at every step. While a preset runs, the appliance's
+programme finishing at a step boundary is not reported either; the preset
+reports its own finish. The same news within two minutes is sent once. The
+message follows Home Assistant's language (English or Norwegian Bokmål).
 
 ## How a step transition works
 

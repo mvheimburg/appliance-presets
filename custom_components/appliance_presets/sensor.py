@@ -40,6 +40,8 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     runner: PresetRunner = entry.runtime_data
+    if not runner.programmable:
+        return
     async_add_entities([PresetStatusSensor(runner, entry)])
 
     platform = entity_platform.async_get_current_platform()

@@ -170,6 +170,9 @@ class PresetRunner:
         self._door_timer: CALLBACK_TYPE | None = None
         self._transitioning = False
         self._appliance: Appliance | None = None
+        # False for an appliance without programme controls (e.g. a fridge):
+        # it gets notifications but no preset sensor or panel entry.
+        self.programmable = True
 
     # --- options ---------------------------------------------------------
 

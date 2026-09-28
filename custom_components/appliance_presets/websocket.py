@@ -33,6 +33,8 @@ def ws_appliances(hass: HomeAssistant, connection, msg: dict[str, Any]) -> None:
     result = []
     for entry in hass.config_entries.async_loaded_entries(DOMAIN):
         runner: PresetRunner = entry.runtime_data
+        if not runner.programmable:
+            continue  # notifications only
         appliance = runner.appliance
         result.append(
             {

@@ -10,10 +10,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.typing import ConfigType
 
 from . import websocket
 from .const import (
+    CONF_DEVICE_ID,
     DOMAIN,
     PANEL_COMPONENT,
     PANEL_STATIC_URL,
@@ -24,6 +26,8 @@ from .const import (
 )
 from .engine import PresetRunner
 from .models import PRESET_SCHEMA
+from .notifier import AlarmNotifier
+from .roles import resolve_roles
 from .store import PresetStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,10 +92,18 @@ async def _async_register_panel(hass: HomeAssistant) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: AppliancePresetsConfigEntry) -> bool:
-    """Set up a preset runner for one appliance."""
+    """Set up one appliance: presets if it can run them, and Notify when home."""
     runner = PresetRunner(hass, entry, hass.data[DOMAIN])
+    # A fridge has no programmes; it only gets notifications. An appliance
+    # that already has a preset sensor keeps it, even if its controls are
+    # missing right now.
+    runner.programmable = not resolve_roles(hass, entry.data[CONF_DEVICE_ID]).missing_required or (
+        er.async_get(hass).async_get_entity_id("sensor", DOMAIN, f"{entry.entry_id}_preset")
+        is not None
+    )
     entry.runtime_data = runner
     await runner.async_setup()
+    AlarmNotifier(hass, entry, runner).async_setup()
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(runner.async_shutdown)
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -99,7 +111,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: AppliancePresetsConfigEn
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Options only change safety settings, which the runner reads live."""
+    """Options only change settings that the runner and notifier read live."""
     entry.runtime_data._notify()
 
 

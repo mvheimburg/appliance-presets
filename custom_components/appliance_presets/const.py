@@ -19,6 +19,8 @@ CONF_DOOR_MIN_SETPOINT = "door_min_setpoint"
 CONF_DOOR_GRACE_SECONDS = "door_grace_seconds"
 CONF_REQUIRE_HOME = "require_home"
 CONF_PERSON_ENTITIES = "person_entities"
+CONF_NOTIFY_PERSONS = "notify_persons"
+CONF_NOTIFY_ON = "notify_on"
 
 DEFAULT_PREHEAT_MINUTES = 15
 DEFAULT_MAX_TOTAL_MINUTES = 12 * 60
@@ -30,6 +32,15 @@ DEFAULT_DOOR_MIN_SETPOINT = 150
 # left open on a 250 °C oven.
 DEFAULT_DOOR_GRACE_SECONDS = 120
 DEFAULT_REQUIRE_HOME = False
+
+# What "Notify when home" reports. Stored values; labels are translated.
+NOTIFY_ALARM_CLOCK = "alarm_clock"  # the appliance's own kitchen timer ran out
+NOTIFY_FINISHED = "finished"  # a programme or preset finished
+NOTIFY_PROBLEM = "problem"  # an alarm or fault, or a preset that failed
+NOTIFY_KINDS = [NOTIFY_ALARM_CLOCK, NOTIFY_FINISHED, NOTIFY_PROBLEM]
+# The same news from two sources (the appliance's programme finished, then
+# the preset) within this many seconds is sent once.
+NOTIFY_DEDUPE_SECONDS = 120
 
 # Step kinds
 STEP_TIMED = "timed"  # run for duration_minutes
